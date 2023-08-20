@@ -7,7 +7,9 @@ namespace Problem01
 {
     class Program
     {
-        static byte[] Data_Global = new byte[1000000000];
+        const int size = 1000000000,threadCount =8,length=size/threadCount;
+        static object obj = new object();
+        static byte[] Data_Global = new byte[size];
         static long Sum_Global = 0;
         static int G_index = 0;
         [Obsolete]
@@ -35,24 +37,38 @@ namespace Problem01
         }
         static void sum()
         {
-            if (Data_Global[G_index] % 2 == 0)
+            int startIndex,endIndex,total=0;
+            lock (obj)
             {
-                Sum_Global -= Data_Global[G_index];
+                startIndex = G_index;
+                G_index += length;
+                endIndex = G_index;
             }
-            else if (Data_Global[G_index] % 3 == 0)
+            for (;startIndex<endIndex ;startIndex++ )
             {
-                Sum_Global += (Data_Global[G_index] * 2);
+                byte data = Data_Global[startIndex];
+                if (data % 2 == 0)
+                {
+                    total -= data;
+                }
+                else if (data % 3 == 0)
+                {
+                    total += data * 2;
+                }
+                else if (data % 5 == 0)
+                {
+                    total += data / 2;
+                }
+                else if (data % 7 == 0)
+                {
+                    total += data / 3;
+                }
             }
-            else if (Data_Global[G_index] % 5 == 0)
+            lock (obj)
             {
-                Sum_Global += (Data_Global[G_index] / 2);
+                Sum_Global += total;
             }
-            else if (Data_Global[G_index] % 7 == 0)
-            {
-                Sum_Global += (Data_Global[G_index] / 3);
-            }
-            Data_Global[G_index] = 0;
-            G_index++;
+            //Data_Global[G_index] = 0;
         }
         static void Main(string[] args)
         {
@@ -73,9 +89,14 @@ namespace Problem01
 
             /* Start */
             Console.Write("\n\nWorking...");
+            Thread[] threads = new Thread[threadCount];
             sw.Start();
-            for (i = 0; i < 1000000000; i++)
-                sum();
+            for (i = 0; i < threadCount; i++) {
+                threads[i] = new Thread(new ThreadStart(sum));
+                threads[i].Start();
+            }
+            for (i = 0; i < threadCount; i++)
+                threads[i].Join();
             sw.Stop();
             Console.WriteLine("Done.");
 
