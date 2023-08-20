@@ -2,25 +2,21 @@
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
+
 namespace Problem01
 {
-
     class Program
     {
-        const int size = 1000000000;
-        const int threadCount = 8;
-        const int length = size / threadCount;
-        static byte[] Data_Global = new byte[size];
+        static byte[] Data_Global = new byte[1000000000];
         static long Sum_Global = 0;
         static int G_index = 0;
-        private static object obj = new object();
         [Obsolete]
         static int ReadData()
         {
             int returnData = 0;
             FileStream fs = new FileStream("Problem01.dat", FileMode.Open);
             BinaryFormatter bf = new BinaryFormatter();
-            var arr = new byte[10];
+
             try
             {
                 Data_Global = (byte[])bf.Deserialize(fs);
@@ -37,11 +33,31 @@ namespace Problem01
 
             return returnData;
         }
-
+        static void sum()
+        {
+            if (Data_Global[G_index] % 2 == 0)
+            {
+                Sum_Global -= Data_Global[G_index];
+            }
+            else if (Data_Global[G_index] % 3 == 0)
+            {
+                Sum_Global += (Data_Global[G_index] * 2);
+            }
+            else if (Data_Global[G_index] % 5 == 0)
+            {
+                Sum_Global += (Data_Global[G_index] / 2);
+            }
+            else if (Data_Global[G_index] % 7 == 0)
+            {
+                Sum_Global += (Data_Global[G_index] / 3);
+            }
+            Data_Global[G_index] = 0;
+            G_index++;
+        }
         static void Main(string[] args)
         {
             Stopwatch sw = new Stopwatch();
-            int y;
+            int i, y;
 
             /* Read data from file */
             Console.Write("Data read...");
@@ -57,58 +73,15 @@ namespace Problem01
 
             /* Start */
             Console.Write("\n\nWorking...");
-            Thread[] threads = new Thread[threadCount];
-            ThreadStart start = new ThreadStart(sum);
-            int i = threadCount - 1;
             sw.Start();
-            for (; i >= 0; i--)
-            {
-                threads[i] = new Thread(start);
-                threads[i].Start();
-            }
-            for (i = threadCount - 1; i >= 0; i--)
-                threads[i].Join();
+            for (i = 0; i < 1000000000; i++)
+                sum();
             sw.Stop();
             Console.WriteLine("Done.");
 
             /* Result */
             Console.WriteLine("Summation result: {0}", Sum_Global);
             Console.WriteLine("Time used: " + sw.ElapsedMilliseconds.ToString() + "ms");
-        }
-
-        private static void sum()
-        {
-            int total = 0, a;
-            lock (obj)
-            {
-                a = G_index;
-                G_index += length;
-            }
-            byte data;
-            for (int j = length + a - 1; j >= a; j--)
-            {
-                data = Data_Global[j];
-                if ((data & 1) == 0)
-                {
-                    total -= data;
-                }
-                else if (data % 3 == 0)
-                {
-                    total += data << 1;
-                }
-                else if (data % 5 == 0)
-                {
-                    total += data >> 1;
-                }
-                else if (data % 7 == 0)
-                {
-                    total += data / 3;
-                }
-            }
-            lock (obj)
-            {
-                Sum_Global += total;
-            }
         }
     }
 }
