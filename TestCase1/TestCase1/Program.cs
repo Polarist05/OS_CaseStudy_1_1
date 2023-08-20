@@ -7,7 +7,8 @@ namespace Problem01
 {
     class Program
     {
-        static byte[] Data_Global = new byte[1000000000];
+        const int size = 1000000000;
+        static byte[] Data_Global = new byte[size];
         static long Sum_Global = 0;
         static int G_index = 0;
         [Obsolete]
@@ -35,23 +36,26 @@ namespace Problem01
         }
         static void sum()
         {
-            if (Data_Global[G_index] % 2 == 0)
+            int total = 0;
+            byte data = Data_Global[G_index];
+            if (data % 2 == 0)
             {
-                Sum_Global -= Data_Global[G_index];
+                total -= data;
             }
-            else if (Data_Global[G_index] % 3 == 0)
+            else if (data % 3 == 0)
             {
-                Sum_Global += (Data_Global[G_index] * 2);
+                total += (data * 2);
             }
-            else if (Data_Global[G_index] % 5 == 0)
+            else if (data% 5 == 0)
             {
-                Sum_Global += (Data_Global[G_index] / 2);
+                total += (data / 2);
             }
-            else if (Data_Global[G_index] % 7 == 0)
+            else if (data % 7 == 0)
             {
-                Sum_Global += (Data_Global[G_index] / 3);
+                total += (data / 3);
             }
-            Data_Global[G_index] = 0;
+            //Data_Global[G_index] = 0;
+            Sum_Global += total;
             G_index++;
         }
         static void Main(string[] args)
@@ -74,7 +78,7 @@ namespace Problem01
             /* Start */
             Console.Write("\n\nWorking...");
             sw.Start();
-            for (i = 0; i < 1000000000; i++)
+            for (i = 0; i < size; i++)
                 sum();
             sw.Stop();
             Console.WriteLine("Done.");
