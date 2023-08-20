@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
@@ -7,11 +9,11 @@ namespace Problem01
 {
     class Program
     {
-        const int size = 1000000000,threadCount =8,length=size/threadCount;
-        static object obj = new object();
+        const int size = 1000000000, threadCount = 8, length = size / threadCount;
+        static  readonly object obj = new object();
         static byte[] Data_Global = new byte[size];
         static long Sum_Global = 0;
-        static int G_index = 0;
+        static int G_index = -1;
         [Obsolete]
         static int ReadData()
         {
@@ -37,16 +39,16 @@ namespace Problem01
         }
         static void sum()
         {
-            int startIndex,endIndex,total=0;
+            int startIndex, endIndex, total = 0;
             lock (obj)
             {
                 startIndex = G_index;
                 G_index += length;
-                endIndex = G_index;
             }
-            for (;startIndex<endIndex ;startIndex++ )
+            endIndex = startIndex + length;
+            for (; startIndex < endIndex; endIndex--)
             {
-                byte data = Data_Global[startIndex];
+                byte data = Data_Global[endIndex];
                 if (data % 2 == 0)
                 {
                     total -= data;
@@ -91,11 +93,12 @@ namespace Problem01
             Console.Write("\n\nWorking...");
             Thread[] threads = new Thread[threadCount];
             sw.Start();
-            for (i = 0; i < threadCount; i++) {
+            for (i = threadCount - 1; i >= 0; i--)
+            {
                 threads[i] = new Thread(new ThreadStart(sum));
                 threads[i].Start();
             }
-            for (i = 0; i < threadCount; i++)
+            for (i = threadCount - 1; i >= 0; i--)
                 threads[i].Join();
             sw.Stop();
             Console.WriteLine("Done.");
